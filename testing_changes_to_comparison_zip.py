@@ -3,8 +3,6 @@ import os
 import csv
 lab_panel_dict = {}
 panel_app_dict = {}
-comparison_dict ={}
-comparison_list = []
 directory = '/home/katherine/projects/panel_comparison/panels_unzip'
 
 for filename in os.listdir(directory):
@@ -16,36 +14,41 @@ for filename in os.listdir(directory):
             panel_app_dict[line[0]] = [line[-1]]
         else:
             panel_app_dict[line[0]].append(line[-1])
-      
-
-#print(panel_app_dict['Autism'])
 
 with open('gemini_panels_200522') as lab_panel:
     lab_panel_reader = csv.reader(lab_panel, delimiter='\t')
     for line in lab_panel_reader:
-        if line[0] not in lab_panel_dict:
-            lab_panel_dict[line[0]] = [line[-1]]
-        else:
-            lab_panel_dict[line[0]].append(line[-1])
+        if "GEL" not in line[0]:
+            if line[0] not in lab_panel_dict:
+                lab_panel_dict[line[0]] = [line[-1]]
+            else:
+                lab_panel_dict[line[0]].append(line[-1])
 
-#print(lab_panel_dict['Thrombotic'])
-
-for k in lab_panel_dict.keys() & panel_app_dict.keys():
-    comparison_dict[k] = [lab_panel_dict[k], panel_app_dict[k]]
-    comparison_list
-#print(comparison_dict)
-
-def panel_match(lab_panel):
-    top_score = 0
+def panel_match_scoring(a_lab_panel):
     best_match = ''
-    matching_panels = []
-    for gene in lab_panel:
-        for panel_name, gene_list in panel_app_dict.items():
-            for k in set(lab_panel) & set(gene_list):
-                if panel_name not in matching_panels:
-                    matching_panels.append(panel_name)
-    return matching_panels
+    second_best_match = ''
+    third_best_match = ''
+    top_score = 0
+    second_top = 0
+    third_top = 0
+    for panel_id, a_panel in panel_app_dict.items():
+        score_list = []
+        for a_gene in a_panel:
+            if a_gene in a_lab_panel:
+                score_list.append(1)
+            length_score = len(score_list)
+            score = length_score/len(a_panel)
+        if score > top_score:
+            top_score = score
+            best_match = panel_id
+        elif score > second_top:
+            second_top = score
+            second_best_match = panel_id
+        elif score > third_top:
+            third_top = score
+            third_best_match = panel_id
+    return print("The best match is " + best_match + ", the second best match is " + second_best_match + ", and the third best match is " + third_best_match)
 
-print(lab_panel_dict['Familial hypercholesterolaemia'])
-answer = panel_match(lab_panel_dict['Familial hypercholesterolaemia'])
-print(answer)
+#to find a match add the lab/gemini panel to the search below
+#e.g.
+panel_match_scoring(lab_panel_dict['Hereditary Spastic Paraplegia Adult Onset'])
